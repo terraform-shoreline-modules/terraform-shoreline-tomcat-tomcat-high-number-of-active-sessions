@@ -1,0 +1,142 @@
+{
+  "name": "tomcat_high_number_of_active_sessions",
+  "description": "This incident occurs when the Tomcat server is experiencing an unusually high number of active sessions. Active sessions refer to the number of users currently accessing a web application hosted on the Tomcat server. When the number of active sessions exceeds the server's capacity, it can lead to slow response times, unresponsive applications, or even server crashes. This incident requires immediate attention to resolve the issue and prevent any further impact on the web application's performance.",
+  "params": [
+    {
+      "name": "PATH_TO_TOMCAT_SERVER_LOG_FILE",
+      "value": ""
+    },
+    {
+      "name": "TOMCAT_PORT",
+      "value": ""
+    },
+    {
+      "name": "PATH_TO_TOMCAT_CONFIG_FILE",
+      "value": ""
+    },
+    {
+      "name": "CATALINA_HOME",
+      "value": ""
+    },
+    {
+      "name": "MAX_SESSIONS",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Tomcat High Number of Active Sessions.\nThis incident occurs when the Tomcat server is experiencing an unusually high number of active sessions. Active sessions refer to the number of users currently accessing a web application hosted on the Tomcat server. When the number of active sessions exceeds the server's capacity, it can lead to slow response times, unresponsive applications, or even server crashes. This incident requires immediate attention to resolve the issue and prevent any further impact on the web application's performance."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the number of active sessions on the Tomcat server"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sudo ${CATALINA_HOME}/bin/catalina.sh sessioncount`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the current CPU and memory usage of the Tomcat server"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `top -p $(pgrep java)`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the current network connections to the Tomcat server"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sudo netstat -anp | grep ${TOMCAT_PORT}`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the server log for any errors or warnings related to high session count"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sudo tail -f ${CATALINA_HOME}/logs/catalina.out | grep -i \"session\"`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the server log for any errors or warnings related to memory usage"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sudo tail -f ${CATALINA_HOME}/logs/catalina.out | grep -i \"memory\"`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the server log for any errors or warnings related to CPU usage"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sudo tail -f ${CATALINA_HOME}/logs/catalina.out | grep -i \"cpu\"`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the server logs to identify the source of the high number of active sessions. This can help determine if the issue is caused by a specific application or user activity."
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_active_sessions_script($PATH_TO_TOMCAT_SERVER_LOG_FILE)"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Increase the maximum number of active sessions allowed by the Tomcat server to handle the increased traffic. This can be done by modifying the server's configuration file."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_update_tomcat_config($PATH_TO_TOMCAT_CONFIG_FILE, $MAX_SESSIONS)"
+    }
+  ]
+}
